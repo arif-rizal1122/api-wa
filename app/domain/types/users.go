@@ -1,4 +1,4 @@
-package input
+package types
 
 type RequestUserRegister struct {
 	ID       int    `json:"id"`
@@ -20,20 +20,9 @@ type RequestUpdateUser struct {
 }
 
 
-
-
-type LoginUser struct {
-	// fields here
+type AuthUserLoginRequest struct {
+	Password       string   `json:"password"`
+	Email          string	`json:"email"`
 }
 
-type ResponseUserLogin struct {
-	// fields here
-}
 
-type CheckEmailUser struct {
-	Email string
-}
-
-type UserResponse struct {
-	// fields here
-}

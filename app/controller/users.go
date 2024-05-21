@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"api-wa/app/domain/input"
+	"api-wa/app/domain/types"
 	"api-wa/app/helper"
 	"api-wa/app/service"
 	"net/http"
@@ -21,7 +21,7 @@ func NewUserController(service service.UserService) *UserController {
 
 
 func (c *UserController) RegisterUser(ctx *gin.Context) {
-	var input input.RequestUserRegister
+	var input types.RequestUserRegister
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 
 		response := helper.NewErrorsResponse("Register user failed", http.StatusUnprocessableEntity, err.Error())
@@ -42,7 +42,7 @@ func (c *UserController) RegisterUser(ctx *gin.Context) {
 
 
 func (c *UserController) UpdateUser(ctx *gin.Context) {
-	var input input.RequestUpdateUser
+	var input types.RequestUpdateUser
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		response := helper.NewErrorsResponse("Updated user failed", http.StatusUnprocessableEntity, err.Error())

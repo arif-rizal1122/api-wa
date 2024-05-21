@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"api-wa/app/helper"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,20 +11,25 @@ import (
 func JWTMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenStr := ctx.GetHeader("Authorization")
+
 		if tokenStr == "" {
-			helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, "Token tidak ditemukan")
+			// Mengirim respons HTTP dengan status 401 (Unauthorized)
+			ctx.JSON(http.StatusUnauthorized, helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, "Token tidak ditemukan"))
 			ctx.Abort()
 			return
 		}
-		log.Println("JWT middleware executed")
 
 		userId, err := helper.ValidateToken(tokenStr)
 		if err != nil {
-			helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, err.Error())
+			// Mengirim respons HTTP dengan status 401 (Unauthorized) dan pesan error
+			ctx.JSON(http.StatusUnauthorized, helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, err.Error()))
 			ctx.Abort()
 			return
 		}
+		// Menyimpan ID pengguna dalam konteks
 		ctx.Set("userId", userId)
+
+		// Melanjutkan eksekusi handler selanjutnya
 		ctx.Next()
 	}
 }

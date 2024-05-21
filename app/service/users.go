@@ -4,7 +4,7 @@ import (
 	"api-wa/app/domain/contract"
 	"api-wa/app/domain/entity"
 	"api-wa/app/helper"
-	"api-wa/app/domain/input"
+	"api-wa/app/domain/types"
 	"errors"
 	"net/http"
 	"time"
@@ -30,12 +30,8 @@ func NewUserServiceImpl(repo contract.UserRepository) *UserService {
 
 
 
-
-func (s *UserService) RegisterUser(data input.RequestUserRegister) (*helper.Payload, error) {
-	if data.Name == "" || data.Username == "" || data.Email == "" || data.Password == "" || data.Phone == 0 {
-		return nil, errors.New("all fields are required")
-	}
-
+// REGISTER USER FIXED
+func (s *UserService) RegisterUser(data types.RequestUserRegister) (*helper.Payload, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -69,16 +65,8 @@ func (s *UserService) RegisterUser(data input.RequestUserRegister) (*helper.Payl
 
 
 
-
-
-
-
-
-
-func (s *UserService) UpdateUser(id int, data input.RequestUpdateUser)  error {
-	if data.Name == "" || data.Username == "" || data.Email == "" || data.Phone == 0 {
-		return errors.New("all fields except password are required")
-	}
+// UPDATE USER FIXED
+func (s *UserService) UpdateUser(id int, data types.RequestUpdateUser)  error {
 
 	user, err := s.Repository.FindById(id)
 	if err != nil {
@@ -112,7 +100,7 @@ func (s *UserService) UpdateUser(id int, data input.RequestUpdateUser)  error {
 
 
 
-
+// FIND BY ID FIXED
 func (s *UserService) FindById(Id int) (*helper.PayloadFind, error) {
     user, err := s.Repository.FindById(Id)
     if err != nil {
@@ -140,6 +128,11 @@ func (s *UserService) FindById(Id int) (*helper.PayloadFind, error) {
 
 
 
+
+
+
+
+// FIND ALL FIXED
 func (s *UserService) FindAll() (*[]helper.PayloadFinds, error) {
     users, err := s.Repository.FindAll()
     if err != nil {
@@ -166,22 +159,23 @@ func (s *UserService) FindAll() (*[]helper.PayloadFinds, error) {
 }
 
 
+
+
+// DELETED FIXED
 func (s *UserService) DeleteUser(Id int) error {
-	// Langkah 1: Periksa apakah pengguna ada
 	_, err := s.Repository.FindById(Id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found") // Pengguna tidak ditemukan
+		return errors.New("user not found") 
 	} else if err != nil {
-		return err // Error lain
+		return err 
 	}
 
-	// Langkah 2: Hapus pengguna berdasarkan ID
 	err = s.Repository.DeleteUser(Id)
 	if err != nil {
 		return err
 	}
 
-	return nil // Pengguna berhasil dihapus
+	return nil
 }
 
 

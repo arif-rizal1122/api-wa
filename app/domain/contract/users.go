@@ -3,7 +3,7 @@ package contract
 import (
 	"api-wa/app/domain/entity"
 	"api-wa/app/helper"
-	"api-wa/app/domain/input"
+	"api-wa/app/domain/types"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,24 +14,15 @@ type UserRepository interface {
 	FindById(Id int)                  (*entity.User, error)
 	FindAll()                         (*[]entity.User, error)
 	DeleteUser(Id int)                error
-
-	
-	FindByEmail(email string)		  (*entity.User, error)
-	FindByUsername(username string)   (*entity.User, error)
 }
 
 
 type UserService interface {
-	RegisterUser(data input.RequestUserRegister)   (*entity.User, error)
+	RegisterUser(data types.RequestUserRegister)   (*entity.User, error)
 	UpdateUser(Id int, data entity.User)           (string, error)
 	FindById(Id int)                               (*helper.ResponseFind, error)
-	FindAll()                                      (*[]input.UserResponse, error)
-    DeleteUser(Id int)							   (string, error)
-
-
-	
-	LoginUser(data input.LoginUser)                (input.ResponseUserLogin, error)
-	IsEmailAvailable(data input.CheckEmailUser)    error
+	FindAll()                                      (*[]helper.ResponseFinds, error)
+    DeleteUser(Id int)							   (string, error)	
 }
 
 type UserController interface {
