@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"api-wa/app/helper"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+		log.Println("JWT middleware executed")
 
 		userId, err := helper.ValidateToken(tokenStr)
 		if err != nil {
@@ -23,7 +25,6 @@ func JWTMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-
 		ctx.Set("userId", userId)
 		ctx.Next()
 	}
