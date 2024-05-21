@@ -66,6 +66,8 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Updated success"})
 }
 
+
+
 func (c *UserController) FindById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -109,6 +111,9 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
 }
 
+
+
+
 func (c *UserController) FindAll(ctx *gin.Context) {
 	user, err := c.service.FindAll()
 	if err != nil {
@@ -117,4 +122,22 @@ func (c *UserController) FindAll(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, user)
+}
+
+
+
+func (c *UserController) LoginUser(ctx *gin.Context) {
+	var request types.AuthUserLoginRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, helper.NewErrorsResponse("Bad Request", http.StatusBadRequest, err.Error()))
+		return
+	}
+
+	response, err := c.service.LoginUser(request)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }

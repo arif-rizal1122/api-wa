@@ -17,14 +17,14 @@ type ResponseFind struct {
 	Name      string `json:"name"`
 	Username  string `json:"username"`
 	Email     string `json:"email"`
-	Phone     int    `json:"phone"`
+	Phone     string `json:"phone"`
 }
 
 type ResponseFinds struct {
 	Name      string `json:"name"`
 	Username  string `json:"username"`
 	Email     string `json:"email"`
-	Phone     int    `json:"phone"`
+	Phone     string `json:"phone"`
 }
 
 

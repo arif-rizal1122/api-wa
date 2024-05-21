@@ -6,7 +6,7 @@ type RequestUserRegister struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
-	Phone    int    `json:"phone" binding:"required"`
+	Phone    string `json:"phone" binding:"required"`
 }
 
 
@@ -16,7 +16,7 @@ type RequestUpdateUser struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password"` // Tidak wajib untuk update
-	Phone    int    `json:"phone" binding:"required"`
+	Phone    string `json:"phone" binding:"required"`
 }
 
 

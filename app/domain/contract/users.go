@@ -14,6 +14,8 @@ type UserRepository interface {
 	FindById(Id int)                  (*entity.User, error)
 	FindAll()                         (*[]entity.User, error)
 	DeleteUser(Id int)                error
+
+	UserLogin(email string)	      (*entity.User, error)
 }
 
 
@@ -22,13 +24,18 @@ type UserService interface {
 	UpdateUser(Id int, data entity.User)           (string, error)
 	FindById(Id int)                               (*helper.ResponseFind, error)
 	FindAll()                                      (*[]helper.ResponseFinds, error)
-    DeleteUser(Id int)							   (string, error)	
+    DeleteUser(Id int)							   (string, error)
+	
+	LoginUser(data types.AuthUserLoginRequest) (*entity.User, error)
+	FindByEmail(email string)                  (*entity.User, error)
 }
 
 type UserController interface {
 	RegisterUser(ctx *gin.Context)
+	UpdateUser(ctx *gin.Context)
+	FindById(ctx *gin.Context)
+	FindByEmail(ctx *gin.Context)
+	DeleteUser(ctx *gin.Context)
+
 	LoginUser(ctx *gin.Context)
-	IsEmailAvailable(ctx *gin.Context)
-	GetUserById(ctx *gin.Context)
-	FindAll(ctx *gin.Context)
 }

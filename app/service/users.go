@@ -134,28 +134,28 @@ func (s *UserService) FindById(Id int) (*helper.PayloadFind, error) {
 
 // FIND ALL FIXED
 func (s *UserService) FindAll() (*[]helper.PayloadFinds, error) {
-    users, err := s.Repository.FindAll()
-    if err != nil {
-        return nil, err
-    }
+		users, err := s.Repository.FindAll()
+		if err != nil {
+			return nil, err
+		}
 
-    var userResponses []helper.ResponseFinds
-    for _, user := range *users {
-        userResponses = append(userResponses, helper.ResponseFinds{
-            Name:     user.Name,
-            Username: user.Username,
-            Email:    user.Email,
-            Phone:    user.Phone,
-        })
-    }
+		var userResponses []helper.ResponseFinds
+		for _, user := range *users {
+			userResponses = append(userResponses, helper.ResponseFinds{
+				Name:     user.Name,
+				Username: user.Username,
+				Email:    user.Email,
+				Phone:    user.Phone,
+			})
+		}
 
-    payload := &helper.PayloadFinds{
-        Message: "Get all users success",
-        Status:  http.StatusOK,
-        Datas:   userResponses,
-    }
+		payload := &helper.PayloadFinds{
+			Message: "Get all users success",
+			Status:  http.StatusOK,
+			Datas:   userResponses,
+		}
 
-    return &[]helper.PayloadFinds{*payload}, nil
+		return &[]helper.PayloadFinds{*payload}, nil
 }
 
 
@@ -163,32 +163,50 @@ func (s *UserService) FindAll() (*[]helper.PayloadFinds, error) {
 
 // DELETED FIXED
 func (s *UserService) DeleteUser(Id int) error {
-	_, err := s.Repository.FindById(Id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found") 
-	} else if err != nil {
-		return err 
-	}
+		_, err := s.Repository.FindById(Id)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("user not found") 
+		} else if err != nil {
+			return err 
+		}
 
-	err = s.Repository.DeleteUser(Id)
-	if err != nil {
-		return err
-	}
+		err = s.Repository.DeleteUser(Id)
+		if err != nil {
+			return err
+		}
 
-	return nil
+		return nil
 }
 
 
 
 
+func (s *UserService) LoginUser(data types.AuthUserLoginRequest) (*helper.ResponseUserLogin, error) {
+	// Check email
+	user, err := s.Repository.UserLogin(data.Email)
+	if err != nil {
+		return nil, err
+	}
 
+	// Check password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+		return nil, errors.New("wrong credentials")
+	}
 
+	// Generate JWT token
+	token, err := helper.GenerateToken(user)
+	if err != nil {
+		return nil, err
+	}
 
-// func (s *UserService) LoginUser(data input.LoginUser) (input.ResponseUserLogin, error) {
-// 	// Implementasi logika login pengguna di sini
-// 	// Anda dapat menambahkan logika login sesuai kebutuhan aplikasi Anda
-// 	return input.ResponseUserLogin{}, nil
-// }
+	// Create response
+	response := &helper.ResponseUserLogin{
+		Email: user.Email,
+		Token: token,
+	}
+
+	return response, nil
+}
 
 
 // func (s *UserService) GetAllUsers() ([]input.UserResponse, error) {

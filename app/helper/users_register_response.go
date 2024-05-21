@@ -16,7 +16,7 @@ type ResponseUserRegister struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-	Phone     int    `json:"phone"`
+	Phone     string `json:"phone"`
 }
 
 

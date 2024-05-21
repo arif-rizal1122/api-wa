@@ -26,7 +26,7 @@ func GenerateToken(user *entity.User) (string, error) {
 		},
 	}
 
-	token    := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token    := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err  := token.SignedString(SECRET_KEY)
 	return ss, err
 }

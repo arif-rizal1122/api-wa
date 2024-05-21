@@ -95,6 +95,24 @@ func (u *UserRepositoryctx) DeleteUser(Id int) error {
 
 
 
+func (u *UserRepositoryctx) UserLogin(email string) (*entity.User, error) {
+	var user entity.User
+
+	result := u.DB.First(&user, "Email = ?", email)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Email tidak ditemukan, return nil dan tanpa error
+			return nil, errors.New("credentials errors")
+		}
+		// Handle other potential errors more gracefully (e.g., logging)
+		return nil, fmt.Errorf("error finding user by email: %w", result.Error)
+	}
+
+	// Email ditemukan, return data pengguna tanpa error
+	return &user, nil
+}
+
 
 
 
