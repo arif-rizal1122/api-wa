@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"api-wa/app/domain/types"
+	"api-wa/app/domain/types/request"
 	"api-wa/app/helper"
 	"api-wa/app/service"
 	"net/http"
@@ -21,7 +21,7 @@ func NewUserController(service service.UserService) *UserController {
 
 
 func (c *UserController) RegisterUser(ctx *gin.Context) {
-	var input types.RequestUserRegister
+	var input request.RequestUserRegister
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 
 		response := helper.NewErrorsResponse("Register user failed", http.StatusUnprocessableEntity, err.Error())
@@ -41,8 +41,10 @@ func (c *UserController) RegisterUser(ctx *gin.Context) {
 
 
 
+
+
 func (c *UserController) UpdateUser(ctx *gin.Context) {
-	var input types.RequestUpdateUser
+	var input request.RequestUpdateUser
 
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		response := helper.NewErrorsResponse("Updated user failed", http.StatusUnprocessableEntity, err.Error())
@@ -126,8 +128,10 @@ func (c *UserController) FindAll(ctx *gin.Context) {
 
 
 
+
+
 func (c *UserController) LoginUser(ctx *gin.Context) {
-	var request types.AuthUserLoginRequest
+	var request request.AuthUserLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, helper.NewErrorsResponse("Bad Request", http.StatusBadRequest, err.Error()))
 		return

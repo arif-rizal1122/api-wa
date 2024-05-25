@@ -24,6 +24,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
+		
 		// Menyimpan ID pengguna dalam konteks
 		ctx.Set("userId", userId)
 

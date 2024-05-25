@@ -15,6 +15,7 @@ import (
 )
 
 func BootstrapApp() {
+	
 	// load env file
 	err := godotenv.Load()
 	if err != nil {

@@ -11,6 +11,7 @@ type User struct {
 	Phone     string    `gorm:"type:varchar(20);not null;unique;column:phone" db:"phone"`
 	CreatedAt time.Time `gorm:"column:created_at" db:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at" db:"updated_at"`
+	Statuses  []Status
 }
 
 func (User) TableName() string {

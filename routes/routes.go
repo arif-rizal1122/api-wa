@@ -10,12 +10,11 @@ import (
 func InitRoute(app *gin.Engine, userController *controller.UserController) {
 	route := app
 
-	// Mendaftarkan rute untuk endpoint /register
+
+
 	route.POST("/register", userController.RegisterUser)
 	route.POST("/login", userController.LoginUser)
-	// route.GET("/find/:id", userController.FindById)
-	// route.GET("/users", userController.FindAll)
-	// route.DELETE("/user/delete/:id", userController.DeleteUser)
+
 
 	cms := route.Group("/cms", middleware.JWTMiddleware())
 	{

@@ -3,9 +3,11 @@ package service
 import (
 	"api-wa/app/domain/contract"
 	"api-wa/app/domain/entity"
+	"api-wa/app/domain/types/request"
+	"api-wa/app/domain/types/response"
 	"api-wa/app/helper"
-	"api-wa/app/domain/types"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,9 +15,15 @@ import (
 	"gorm.io/gorm"
 )
 
+
+
+
 type UserService struct {
 	Repository contract.UserRepository
 }
+
+
+
 
 func NewUserServiceImpl(repo contract.UserRepository) *UserService {
 	return &UserService{Repository: repo}
@@ -30,8 +38,9 @@ func NewUserServiceImpl(repo contract.UserRepository) *UserService {
 
 
 
-// REGISTER USER FIXED
-func (s *UserService) RegisterUser(data types.RequestUserRegister) (*helper.Payload, error) {
+
+func (s *UserService) RegisterUser(data request.RequestUserRegister) (*response.Payload, error) {
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -51,11 +60,10 @@ func (s *UserService) RegisterUser(data types.RequestUserRegister) (*helper.Payl
 		return nil, err
 	}
 
-	response := helper.NewAPIregisterResponse(http.StatusOK, "User registered successfully", helper.ResponseUserRegister{
+	response := response.NewAPIregisterResponse(http.StatusOK, "User registered successfully", response.ResponseUserRegister{
 		Name:     createdUser.Name,
 		Username: createdUser.Username,
 		Email:    createdUser.Email,
-		Password: string(hashedPassword),
 		Phone:    createdUser.Phone,
 	})
 
@@ -65,8 +73,13 @@ func (s *UserService) RegisterUser(data types.RequestUserRegister) (*helper.Payl
 
 
 
-// UPDATE USER FIXED
-func (s *UserService) UpdateUser(id int, data types.RequestUpdateUser)  error {
+
+
+
+
+
+
+func (s *UserService) UpdateUser(id int, data request.RequestUpdateUser)  error {
 
 	user, err := s.Repository.FindById(id)
 	if err != nil {
@@ -84,6 +97,8 @@ func (s *UserService) UpdateUser(id int, data types.RequestUpdateUser)  error {
 		user.Password = string(hashedPassword)
 	}
 
+	fmt.Println(data.Password)
+
 	user.Name = data.Name
 	user.Username = data.Username
 	user.Email = data.Email
@@ -100,8 +115,7 @@ func (s *UserService) UpdateUser(id int, data types.RequestUpdateUser)  error {
 
 
 
-// FIND BY ID FIXED
-func (s *UserService) FindById(Id int) (*helper.PayloadFind, error) {
+func (s *UserService) FindById(Id int) (*response.PayloadFind, error) {
     user, err := s.Repository.FindById(Id)
     if err != nil {
         return nil, err
@@ -110,18 +124,18 @@ func (s *UserService) FindById(Id int) (*helper.PayloadFind, error) {
         return nil, errors.New("pengguna tidak ditemukan")
     }
 
-    response := helper.ResponseFind{
+    responseFind := response.ResponseFind{
         Name:     user.Name,
         Username: user.Username,
         Email:    user.Email,
         Phone:    user.Phone,
     }
 
-	payload := &helper.PayloadFind{
-		Message: "Find data success",
-		Status: http.StatusOK,
-		Data: response,
-	}
+    payload := &response.PayloadFind{
+        Message: "Data ditemukan dengan sukses",
+        Status:  http.StatusOK,
+        Data:    responseFind,
+    }
 
     return payload, nil
 }
@@ -129,59 +143,53 @@ func (s *UserService) FindById(Id int) (*helper.PayloadFind, error) {
 
 
 
+func (s *UserService) FindAll() (*[]response.PayloadFinds, error) {
+    users, err := s.Repository.FindAll()
+    if err != nil {
+        return nil, err
+    }
 
+    var userResponses []response.ResponseFinds
+    for _, user := range *users {
+        userResponses = append(userResponses, response.ResponseFinds{
+            Name:     user.Name,
+            Username: user.Username,
+            Email:    user.Email,
+            Phone:    user.Phone,
+        })
+    }
 
+    payload := &response.PayloadFinds{
+        Message: "Get all users success",
+        Status:  http.StatusOK,
+        Datas:   userResponses,
+    }
 
-// FIND ALL FIXED
-func (s *UserService) FindAll() (*[]helper.PayloadFinds, error) {
-		users, err := s.Repository.FindAll()
-		if err != nil {
-			return nil, err
-		}
-
-		var userResponses []helper.ResponseFinds
-		for _, user := range *users {
-			userResponses = append(userResponses, helper.ResponseFinds{
-				Name:     user.Name,
-				Username: user.Username,
-				Email:    user.Email,
-				Phone:    user.Phone,
-			})
-		}
-
-		payload := &helper.PayloadFinds{
-			Message: "Get all users success",
-			Status:  http.StatusOK,
-			Datas:   userResponses,
-		}
-
-		return &[]helper.PayloadFinds{*payload}, nil
+    return &[]response.PayloadFinds{*payload}, nil
 }
 
 
-
-
-// DELETED FIXED
 func (s *UserService) DeleteUser(Id int) error {
-		_, err := s.Repository.FindById(Id)
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found") 
-		} else if err != nil {
-			return err 
-		}
+	// Langkah 1: Periksa apakah pengguna ada
+	_, err := s.Repository.FindById(Id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.New("user not found") // Pengguna tidak ditemukan
+	} else if err != nil {
+		return err // Error lain
+	}
 
-		err = s.Repository.DeleteUser(Id)
-		if err != nil {
-			return err
-		}
+	// Langkah 2: Hapus pengguna berdasarkan ID
+	err = s.Repository.DeleteUser(Id)
+	if err != nil {
+		return err
+	}
 
-		return nil
+	return nil // Pengguna berhasil dihapus
 }
 
 
 
-
-func (s *UserService) LoginUser(data types.AuthUserLoginRequest) (*helper.ResponseUserLogin, error) {
+func (s *UserService) LoginUser(data request.AuthUserLoginRequest) (*response.ResponseUserLogin, error) {
 	// Check email
 	user, err := s.Repository.UserLogin(data.Email)
 	if err != nil {
@@ -200,13 +208,22 @@ func (s *UserService) LoginUser(data types.AuthUserLoginRequest) (*helper.Respon
 	}
 
 	// Create response
-	response := &helper.ResponseUserLogin{
+	response := &response.ResponseUserLogin{
 		Email: user.Email,
 		Token: token,
 	}
 
 	return response, nil
 }
+
+
+
+
+// func (s *UserService) LoginUser(data input.LoginUser) (input.ResponseUserLogin, error) {
+// 	// Implementasi logika login pengguna di sini
+// 	// Anda dapat menambahkan logika login sesuai kebutuhan aplikasi Anda
+// 	return input.ResponseUserLogin{}, nil
+// }
 
 
 // func (s *UserService) GetAllUsers() ([]input.UserResponse, error) {

@@ -1,4 +1,4 @@
-package helper
+package response
 
 
 type UpdateResponse struct {

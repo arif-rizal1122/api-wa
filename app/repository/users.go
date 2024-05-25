@@ -75,9 +75,6 @@ func (u *UserRepositoryctx) FindAll() (*[]entity.User, error) {
 }
 
 
-
-
-
 func (u *UserRepositoryctx) DeleteUser(Id int) error {
     // Langkah 1: Cari pengguna berdasarkan ID
     user, err := u.FindById(Id)
@@ -92,6 +89,8 @@ func (u *UserRepositoryctx) DeleteUser(Id int) error {
     }
     return nil
 }
+
+
 
 
 
@@ -112,7 +111,6 @@ func (u *UserRepositoryctx) UserLogin(email string) (*entity.User, error) {
 	// Email ditemukan, return data pengguna tanpa error
 	return &user, nil
 }
-
 
 
 

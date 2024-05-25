@@ -30,4 +30,5 @@ func InitDBConfig() {
 	if dbPassword := os.Getenv("DB_PASSWORD"); dbPassword != "" {
 		DB_PASSWORD = dbPassword
 	}
+	
 }

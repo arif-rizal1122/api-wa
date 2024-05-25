@@ -1,4 +1,4 @@
-package types
+package request
 
 type RequestUserRegister struct {
 	ID       int    `json:"id"`
@@ -12,17 +12,17 @@ type RequestUserRegister struct {
 
 
 type RequestUpdateUser struct {
-	Name     string `json:"name" binding:"required"`
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password"` // Tidak wajib untuk update
-	Phone    string `json:"phone" binding:"required"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Phone    string `json:"phone"`
 }
 
 
 type AuthUserLoginRequest struct {
-	Password       string   `json:"password"`
-	Email          string	`json:"email"`
+	Password       string   `json:"password" binding:"required"`
+	Email          string	`json:"email" binding:"required,email"`
 }
 
 
