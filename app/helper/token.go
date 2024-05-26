@@ -15,40 +15,39 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-
+// GenerateToken generates a new JWT token for the given user
 func GenerateToken(user *entity.User) (string, error) {
-	claims  :=  JWTClaims{
-		user.ID,
-		jwt.RegisteredClaims{
-			ExpiresAt:      jwt.NewNumericDate(time.Now().Add(60 * time.Minute)),
-			IssuedAt:       jwt.NewNumericDate(time.Now()),
-			NotBefore:      jwt.NewNumericDate(time.Now()),
+	claims := JWTClaims{
+		ID: user.ID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(60 * time.Minute)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
 		},
 	}
 
-	token    := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err  := token.SignedString(SECRET_KEY)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString(SECRET_KEY)
 	return ss, err
 }
 
-
-
-func ValidateToken(tokenStr string) (*int, error) {
-	token, err :=  jwt.ParseWithClaims(tokenStr, &JWTClaims{}, func(t *jwt.Token) (interface{}, error) {
+// ValidateToken validates a JWT token and returns the user ID if valid
+func ValidateToken(tokenStr string) (int, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &JWTClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return SECRET_KEY, nil
 	})
 
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
-			return nil, errors.New("invalid token signature")
+			return 0, errors.New("invalid token signature")
 		}
-		return nil, errors.New("your token was expired")
+		return 0, errors.New("your token was expired")
 	}
 
-	claims, ok   :=   token.Claims.(*JWTClaims)
-	if !ok   || !token.Valid {
-		return nil, errors.New("your token was expired")
+	claims, ok := token.Claims.(*JWTClaims)
+	if !ok || !token.Valid {
+		return 0, errors.New("your token was expired")
 	}
 
-	return &claims.ID, nil
+	return claims.ID, nil
 }

@@ -19,14 +19,14 @@ func JWTMiddleware() gin.HandlerFunc {
 
 		userId, err := helper.ValidateToken(tokenStr)
 		if err != nil {
-			// Mengirim respons HTTP dengan status 401 (Unauthorized) dan pesan error
 			ctx.JSON(http.StatusUnauthorized, helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, err.Error()))
 			ctx.Abort()
 			return
 		}
 		
+	
 		// Menyimpan ID pengguna dalam konteks
-		ctx.Set("userId", userId)
+		ctx.Set("userId", userId)	
 
 		// Melanjutkan eksekusi handler selanjutnya
 		ctx.Next()

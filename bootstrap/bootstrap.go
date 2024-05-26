@@ -34,12 +34,16 @@ func BootstrapApp() {
 	// init user repository, service, and controller
 	userRepository := repository.NewUserRepository(database.DB)
 	userService := service.NewUserServiceImpl(userRepository)
-
 	// Mengubah tipe userService ke *service.UserServiceImpl
 	userController := controller.NewUserController(*userService)
 
+
+	statusRepository := repository.NewStatusRepository(database.DB)
+	statusService    := service.NewStatusService(statusRepository)
+	statusController := controller.NewStatusController(*statusService)
+
 	// inject user controller to routes
-	routes.InitRoute(app, userController)
+	routes.InitRoute(app, userController, statusController)
 
 	// run app
 	app.Run(":" + appconfig.PORT)

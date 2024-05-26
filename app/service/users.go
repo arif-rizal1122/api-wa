@@ -45,7 +45,6 @@ func (s *UserService) RegisterUser(data request.RequestUserRegister) (*response.
 	if err != nil {
 		return nil, err
 	}
-
 	user := &entity.User{
 		Name:      data.Name,
 		Username:  data.Username,
@@ -54,12 +53,10 @@ func (s *UserService) RegisterUser(data request.RequestUserRegister) (*response.
 		Phone:     data.Phone,
 		CreatedAt: time.Now(),
 	}
-
 	createdUser, err := s.Repository.Create(user)
 	if err != nil {
 		return nil, err
 	}
-
 	response := response.NewAPIregisterResponse(http.StatusOK, "User registered successfully", response.ResponseUserRegister{
 		Name:     createdUser.Name,
 		Username: createdUser.Username,

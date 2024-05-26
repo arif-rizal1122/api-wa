@@ -31,13 +31,11 @@ type UserService interface {
 }
 
 
-
 type UserController interface {
 	RegisterUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
 	FindById(ctx *gin.Context)
 	FindByEmail(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
-
 	LoginUser(ctx *gin.Context)
 }

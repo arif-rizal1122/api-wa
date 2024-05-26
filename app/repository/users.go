@@ -9,41 +9,73 @@ import (
 	"gorm.io/gorm"
 )
 
-
-
-
 type UserRepositoryctx struct {
 	DB *gorm.DB
 }
-
-
-
 
 func NewUserRepository(db *gorm.DB) contract.UserRepository {
 	return &UserRepositoryctx{DB: db}
 }
 
-
-
-
 func (u *UserRepositoryctx) Create(data *entity.User) (*entity.User, error) {
-	err := u.DB.Table("users").Create(&data).Error
+	tx := u.DB.Begin() 
+	err := tx.Table("users").Create(&data).Error
 	if err != nil {
+		tx.Rollback() // Rollback jika terjadi kesalahan
 		return nil, err
 	}
-	return data , nil
+
+	tx.Commit() 
+	return data, nil
 }
-
-
-
 
 func (u *UserRepositoryctx) Update(data *entity.User) error {
-	err := u.DB.Table("users").Save(&data).Error
+	tx := u.DB.Begin() 
+
+	err := tx.Table("users").Save(&data).Error
 	if err != nil {
+		tx.Rollback() // Rollback jika terjadi kesalahan
 		return err
 	}
+
+	tx.Commit()
 	return nil
 }
+
+
+func (u *UserRepositoryctx) DeleteUser(Id int) error {
+	tx := u.DB.Begin() 
+	user, err := u.FindById(Id)
+	if err != nil {
+		tx.Rollback() // Rollback jika terjadi kesalahan
+		return err
+	}
+
+	result := tx.Delete(&user)
+	if result.Error != nil {
+		tx.Rollback() // Rollback jika terjadi kesalahan
+		return result.Error
+	}
+
+	tx.Commit()
+	return nil
+}
+
+
+
+
+
+
+func (u *UserRepositoryctx) FindAll() (*[]entity.User, error) {
+	var users []entity.User
+
+	result := u.DB.Find(&users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &users, nil
+}
+
 
 
 
@@ -60,37 +92,6 @@ func (u *UserRepositoryctx) FindById(Id int) (*entity.User, error) {
 	}
 	return &user, nil
 }
-
-
-
-
-func (u *UserRepositoryctx) FindAll() (*[]entity.User, error) {
-	var users []entity.User
-
-	result := u.DB.Find(&users)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &users, nil
-}
-
-
-func (u *UserRepositoryctx) DeleteUser(Id int) error {
-    // Langkah 1: Cari pengguna berdasarkan ID
-    user, err := u.FindById(Id)
-    if err != nil {
-        return err
-    }
-
-    // Langkah 2: Hapus pengguna
-    result := u.DB.Delete(&user)
-    if result.Error != nil {
-        return result.Error
-    }
-    return nil
-}
-
-
 
 
 
@@ -111,8 +112,3 @@ func (u *UserRepositoryctx) UserLogin(email string) (*entity.User, error) {
 	// Email ditemukan, return data pengguna tanpa error
 	return &user, nil
 }
-
-
-
-
-
