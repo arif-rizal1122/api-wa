@@ -18,42 +18,58 @@ func NewUserRepository(db *gorm.DB) contract.UserRepository {
 }
 
 func (u *UserRepositoryctx) Create(data *entity.User) (*entity.User, error) {
-	tx := u.DB.Begin() 
+	tx := u.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	err := tx.Table("users").Create(&data).Error
 	if err != nil {
-		tx.Rollback() // Rollback jika terjadi kesalahan
+		tx.Rollback() 
 		return nil, err
 	}
-
 	tx.Commit() 
 	return data, nil
 }
 
 func (u *UserRepositoryctx) Update(data *entity.User) error {
-	tx := u.DB.Begin() 
+	tx := u.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	err := tx.Table("users").Save(&data).Error
 	if err != nil {
-		tx.Rollback() // Rollback jika terjadi kesalahan
+		tx.Rollback()
 		return err
 	}
-
+ 
 	tx.Commit()
 	return nil
 }
 
 
 func (u *UserRepositoryctx) DeleteUser(Id int) error {
-	tx := u.DB.Begin() 
+	tx := u.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	user, err := u.FindById(Id)
 	if err != nil {
-		tx.Rollback() // Rollback jika terjadi kesalahan
+		tx.Rollback() 
 		return err
 	}
 
 	result := tx.Delete(&user)
 	if result.Error != nil {
-		tx.Rollback() // Rollback jika terjadi kesalahan
+		tx.Rollback() 
 		return result.Error
 	}
 
@@ -65,14 +81,23 @@ func (u *UserRepositoryctx) DeleteUser(Id int) error {
 
 
 
-
 func (u *UserRepositoryctx) FindAll() (*[]entity.User, error) {
 	var users []entity.User
 
-	result := u.DB.Find(&users)
+	tx := u.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	result := tx.Find(&users)
 	if result.Error != nil {
+		tx.Rollback()
 		return nil, result.Error
 	}
+
+	tx.Commit()
 	return &users, nil
 }
 
@@ -81,15 +106,26 @@ func (u *UserRepositoryctx) FindAll() (*[]entity.User, error) {
 
 func (u *UserRepositoryctx) FindById(Id int) (*entity.User, error) {
 	var user entity.User
-	result := u.DB.First(&user, "id = ?", Id) // Use named placeholders for security
+
+	tx := u.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	result := tx.First(&user, "id = ?", Id) 
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			tx.Rollback()
 			return &entity.User{}, errors.New("user not found")
 		}
-		// Handle other potential errors more gracefully (e.g., logging)
+		tx.Rollback()
 		return &entity.User{}, fmt.Errorf("error finding user by ID: %w", result.Error)
 	}
+
+	tx.Commit()
 	return &user, nil
 }
 
@@ -97,18 +133,23 @@ func (u *UserRepositoryctx) FindById(Id int) (*entity.User, error) {
 
 func (u *UserRepositoryctx) UserLogin(email string) (*entity.User, error) {
 	var user entity.User
+	tx := u.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	result := u.DB.First(&user, "Email = ?", email)
-
+	result := tx.First(&user, "Email = ?", email)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			// Email tidak ditemukan, return nil dan tanpa error
+			tx.Rollback()
 			return nil, errors.New("credentials errors")
 		}
-		// Handle other potential errors more gracefully (e.g., logging)
+		    tx.Rollback()
 		return nil, fmt.Errorf("error finding user by email: %w", result.Error)
 	}
 
-	// Email ditemukan, return data pengguna tanpa error
+	tx.Commit()
 	return &user, nil
 }

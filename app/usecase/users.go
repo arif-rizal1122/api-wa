@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"api-wa/app/domain/contract"
@@ -7,7 +7,6 @@ import (
 	"api-wa/app/domain/types/response"
 	"api-wa/app/helper"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -18,29 +17,17 @@ import (
 
 
 
-type UserService struct {
+type UserUsecase struct {
 	Repository contract.UserRepository
 }
 
 
-
-
-func NewUserServiceImpl(repo contract.UserRepository) *UserService {
-	return &UserService{Repository: repo}
+func NewUserUsecaseImpl(repo contract.UserRepository) *UserUsecase {
+	return &UserUsecase{Repository: repo}
 }
 
 
-
-
-
-
-
-
-
-
-
-func (s *UserService) RegisterUser(data request.RequestUserRegister) (*response.Payload, error) {
-
+func (s *UserUsecase) RegisterUser(data request.RequestUserRegister) (*response.Payload, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -68,16 +55,7 @@ func (s *UserService) RegisterUser(data request.RequestUserRegister) (*response.
 }
 
 
-
-
-
-
-
-
-
-
-func (s *UserService) UpdateUser(id int, data request.RequestUpdateUser)  error {
-
+func (s *UserUsecase) UpdateUser(id int, data request.RequestUpdateUser)  error {
 	user, err := s.Repository.FindById(id)
 	if err != nil {
 		return err
@@ -85,7 +63,6 @@ func (s *UserService) UpdateUser(id int, data request.RequestUpdateUser)  error 
 	if user == nil {
 		return errors.New("user not found")
 	}
-
 	if data.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -93,8 +70,6 @@ func (s *UserService) UpdateUser(id int, data request.RequestUpdateUser)  error 
 		}
 		user.Password = string(hashedPassword)
 	}
-
-	fmt.Println(data.Password)
 
 	user.Name = data.Name
 	user.Username = data.Username
@@ -112,7 +87,7 @@ func (s *UserService) UpdateUser(id int, data request.RequestUpdateUser)  error 
 
 
 
-func (s *UserService) FindById(Id int) (*response.PayloadFind, error) {
+func (s *UserUsecase) FindById(Id int) (*response.PayloadFind, error) {
     user, err := s.Repository.FindById(Id)
     if err != nil {
         return nil, err
@@ -139,13 +114,11 @@ func (s *UserService) FindById(Id int) (*response.PayloadFind, error) {
 
 
 
-
-func (s *UserService) FindAll() (*[]response.PayloadFinds, error) {
+func (s *UserUsecase) FindAll() (*[]response.PayloadFinds, error) {
     users, err := s.Repository.FindAll()
     if err != nil {
         return nil, err
     }
-
     var userResponses []response.ResponseFinds
     for _, user := range *users {
         userResponses = append(userResponses, response.ResponseFinds{
@@ -155,76 +128,54 @@ func (s *UserService) FindAll() (*[]response.PayloadFinds, error) {
             Phone:    user.Phone,
         })
     }
-
     payload := &response.PayloadFinds{
         Message: "Get all users success",
         Status:  http.StatusOK,
         Datas:   userResponses,
     }
-
     return &[]response.PayloadFinds{*payload}, nil
 }
 
 
-func (s *UserService) DeleteUser(Id int) error {
-	// Langkah 1: Periksa apakah pengguna ada
+
+
+func (s *UserUsecase) DeleteUser(Id int) error {
 	_, err := s.Repository.FindById(Id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found") // Pengguna tidak ditemukan
+		return errors.New("user not found")
 	} else if err != nil {
-		return err // Error lain
+		return err 
 	}
 
-	// Langkah 2: Hapus pengguna berdasarkan ID
 	err = s.Repository.DeleteUser(Id)
 	if err != nil {
 		return err
 	}
 
-	return nil // Pengguna berhasil dihapus
+	return nil 
 }
 
 
 
-func (s *UserService) LoginUser(data request.AuthUserLoginRequest) (*response.ResponseUserLogin, error) {
-	// Check email
+func (s *UserUsecase) LoginUser(data request.AuthUserLoginRequest) (*response.ResponseUserLogin, error) {
 	user, err := s.Repository.UserLogin(data.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
 		return nil, errors.New("wrong credentials")
 	}
 
-	// Generate JWT token
 	token, err := helper.GenerateToken(user)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create response
 	response := &response.ResponseUserLogin{
 		Email: user.Email,
 		Token: token,
 	}
-
 	return response, nil
 }
 
-
-
-
-// func (s *UserService) LoginUser(data input.LoginUser) (input.ResponseUserLogin, error) {
-// 	// Implementasi logika login pengguna di sini
-// 	// Anda dapat menambahkan logika login sesuai kebutuhan aplikasi Anda
-// 	return input.ResponseUserLogin{}, nil
-// }
-
-
-// func (s *UserService) GetAllUsers() ([]input.UserResponse, error) {
-// 	// Implementasi logika pengambilan semua pengguna di sini
-// 	// Anda dapat menambahkan logika pengambilan semua pengguna sesuai kebutuhan aplikasi Anda
-// 	return []input.UserResponse{}, nil
-// }

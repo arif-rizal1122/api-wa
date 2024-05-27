@@ -14,18 +14,22 @@ func InitRoute(app *gin.Engine, userController *controller.UserController, statu
 
 	route.POST("/register", userController.RegisterUser)
 	route.POST("/login", userController.LoginUser)
-	
-	route.GET("/users", userController.FindAll)
-	
+
 	cms := route.Group("/cms", middleware.JWTMiddleware())
 	{
-	cms.POST("/status/create", statusController.CreateStatus)
-	cms.PUT("/update/:id", userController.UpdateUser)
-	cms.GET("/find/:id", userController.FindById)
-	cms.DELETE("/user/delete/:id", userController.DeleteUser)
-
-	cms.POST("/status")
+		cms.GET("/users", userController.FindAll)
+		cms.PUT("/update/:id", userController.UpdateUser)
+		cms.GET("/find/:id", userController.FindById)
+		cms.DELETE("/user/delete/:id", userController.DeleteUser)
+		
+		cms.POST("/status/create", statusController.CreateStatus)
+	    cms.GET("/status/find/:id", statusController.FindById)
+		cms.GET("/status/finds", statusController.FindAll)
+		cms.POST("/status/delete/:id", statusController.Delete)
+		cms.POST("/status/update/:id", statusController.Update)
 	}
 
+
+	
 	
 }

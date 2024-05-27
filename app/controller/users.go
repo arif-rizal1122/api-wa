@@ -3,7 +3,7 @@ package controller
 import (
 	"api-wa/app/domain/types/request"
 	"api-wa/app/helper"
-	"api-wa/app/service"
+	"api-wa/app/usecase"
 	"net/http"
 	"strconv"
 
@@ -11,11 +11,11 @@ import (
 )
 
 type UserController struct {
-	service service.UserService
+	usecase usecase.UserUsecase
 }
 
-func NewUserController(service service.UserService) *UserController {
-	return &UserController{service: service}
+func NewUserController(usecase usecase.UserUsecase) *UserController {
+	return &UserController{usecase: usecase}
 }
 
 
@@ -29,7 +29,7 @@ func (c *UserController) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	response, err := c.service.RegisterUser(input)
+	response, err := c.usecase.RegisterUser(input)
 	if err != nil {
 		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusBadRequest, err.Error())
 		ctx.JSON(http.StatusBadRequest, errRes)
@@ -59,7 +59,7 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	err = c.service.UpdateUser(id, input)
+	err = c.usecase.UpdateUser(id, input)
 	if err != nil {
 		response := helper.NewErrorsResponse("Internal server error", http.StatusBadRequest, err.Error())
 		ctx.JSON(http.StatusBadRequest, response)
@@ -67,6 +67,8 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Updated success"})
 }
+
+
 
 
 
@@ -78,7 +80,7 @@ func (c *UserController) FindById(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.service.FindById(id)
+	user, err := c.usecase.FindById(id)
 	if err != nil {
 		response := helper.NewErrorsResponse("user id no found", http.StatusNotFound, err.Error())
 		ctx.JSON(http.StatusNotFound, response)
@@ -103,7 +105,7 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err = c.service.DeleteUser(Id)
+	err = c.usecase.DeleteUser(Id)
 	if err != nil {
 		response := helper.NewErrorsResponse("error deleting user", http.StatusBadRequest, err.Error())
 		ctx.JSON(http.StatusBadRequest, response)
@@ -117,7 +119,7 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 
 
 func (c *UserController) FindAll(ctx *gin.Context) {
-	user, err := c.service.FindAll()
+	user, err := c.usecase.FindAll()
 	if err != nil {
 		response := helper.NewErrorsResponse("user id no found", http.StatusNotFound, err.Error())
 		ctx.JSON(http.StatusNotFound, response)
@@ -137,7 +139,7 @@ func (c *UserController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	response, err := c.service.LoginUser(request)
+	response, err := c.usecase.LoginUser(request)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, err.Error()))
 		return

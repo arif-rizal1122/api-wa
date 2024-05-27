@@ -11,6 +11,6 @@ CREATE TABLE users (
 
 
 
--- migrate -database "mysql://root:@tcp(127.0.0.1:3306)/gin-gorm" -path database/migrations up
+-- migrate -database "mysql://root:@tcp(127.0.0.1:3306)/WA-API" -path database/migrations up
 -- migrate -database "mysql://root:@tcp(127.0.0.1:3306)/gin-gorm" -path database/migrations down
 -- create migrate -ext sql -dir database/migrations users_create_table

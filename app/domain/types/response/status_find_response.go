@@ -27,8 +27,8 @@ type StatusResponseFinds struct {
 
 
 
-func NewStatusResponseFind(message string, status int, rqs StatusResponseFind) *PayloadStatusFind {
-	 return &PayloadStatusFind{
+func NewStatusResponseFind(message string, status int, rqs StatusResponseFind) PayloadStatusFind {
+	 return PayloadStatusFind{
 		Message: message,
 		Status: status,
 		StatusResponseFind: rqs,
@@ -36,10 +36,10 @@ func NewStatusResponseFind(message string, status int, rqs StatusResponseFind) *
 }
 
 
-func NewStatusResponseFinds(message string, status int, rqs []StatusResponseFinds) *PayloadStatusFinds {
-	return &PayloadStatusFinds{
-		Message:              message,
-		Status:               status,
-		StatusResponseFinds:  rqs,
+func NewStatusResponseFinds(message string, status int, rqs []StatusResponseFinds) PayloadStatusFinds {
+	return PayloadStatusFinds{
+		Message:             message,
+		Status:              status,
+		StatusResponseFinds: rqs,
 	}
 }

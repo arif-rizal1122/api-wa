@@ -21,7 +21,7 @@ type StatusRepository interface {
 }
 
 
-type StatusService interface {
+type StatusUsecase interface {
 	Create(data         request.RequestCreateStatus)  (*response.StatusCreateResponse, error)
 	Update(data         request.RequestUpdateStatus)  (*response.StatusUpdateResponse, error)	
 	FindById(statusId int)							(*response.StatusResponseFind, error)

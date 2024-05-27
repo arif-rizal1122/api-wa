@@ -13,6 +13,7 @@ type RequestCreateStatus struct {
 type RequestUpdateStatus struct {
 	 Picture                   string	`json:"picture"`
 	 Caption                   string	`json:"caption"`
+	 StatusId                  int      `json:"user_id"`
 }
 
 

@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"api-wa/app/controller"
 	"api-wa/app/repository"
-	"api-wa/app/service"
+	"api-wa/app/usecase"
 	"api-wa/config"
 	"api-wa/config/appconfig"
 	"api-wa/database"
@@ -33,14 +33,14 @@ func BootstrapApp() {
 
 	// init user repository, service, and controller
 	userRepository := repository.NewUserRepository(database.DB)
-	userService := service.NewUserServiceImpl(userRepository)
-	// Mengubah tipe userService ke *service.UserServiceImpl
-	userController := controller.NewUserController(*userService)
+	userusecase := usecase.NewUserUsecaseImpl(userRepository)
+	// Mengubah tipe userusecase ke *usecase.UserusecaseImpl
+	userController := controller.NewUserController(*userusecase)
 
 
 	statusRepository := repository.NewStatusRepository(database.DB)
-	statusService    := service.NewStatusService(statusRepository)
-	statusController := controller.NewStatusController(*statusService)
+	statususecase    := usecase.NewStatusUsecase(statusRepository)
+	statusController := controller.NewStatusController(*statususecase)
 
 	// inject user controller to routes
 	routes.InitRoute(app, userController, statusController)
