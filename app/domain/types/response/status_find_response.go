@@ -9,20 +9,22 @@ type PayloadStatusFind struct {
 
 type PayloadStatusFinds struct {
 	Message          string  `json:"message"`
-	Status           int	  `json:"status"`
+	Status           int	 `json:"status"`
 	StatusResponseFinds    []StatusResponseFinds  
 }
 
 
 type StatusResponseFind struct {
-	Picture         string
-	Caption         string
+	Picture         string   `json:"picture"`
+	Caption         string	 `json:"caption"`
+	UserId          int 	 `json:"user_id"`
 }
 
 
 type StatusResponseFinds struct {
-	Picture         string
-	Caption         string
+	Picture         string   `json:"picture"`
+	Caption         string	 `json:"caption"`
+	UserId          int 	 `json:"user_id"`
 }
 
 

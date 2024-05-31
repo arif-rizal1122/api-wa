@@ -2,15 +2,15 @@ package response
 
 
 type PayloadFind struct {
-	Message     string
-	Status      int
-	Data        ResponseFind
+	Message     string   `json:"message"`
+	Status      int		 `json:"status"`
+	Data        ResponseFind  `json:"data"`
 }
 
 type PayloadFinds struct {
-    Message string
-    Status  int
-    Datas   []ResponseFinds
+    Message string  `json:"message"`
+    Status  int     `json:"status"`
+    Datas   []ResponseFinds  `json:"data"`
 }
 
 type ResponseFind struct {

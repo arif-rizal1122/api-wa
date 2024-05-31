@@ -17,18 +17,22 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := helper.ValidateToken(tokenStr)
+		userId, role, userCurrent, err := helper.ValidateToken(tokenStr)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, helper.NewErrorsResponse("Unauthorized", http.StatusUnauthorized, err.Error()))
 			ctx.Abort()
 			return
 		}
-		
-	
-		// Menyimpan ID pengguna dalam konteks
-		ctx.Set("userId", userId)	
 
+
+		// Menyimpan ID pengguna dalam konteks
+		ctx.Set("userId", userId)
+		ctx.Set("role", role)
+		ctx.Set("userCurrent", userCurrent)
 		// Melanjutkan eksekusi handler selanjutnya
+
+		
 		ctx.Next()
 	}
 }
+

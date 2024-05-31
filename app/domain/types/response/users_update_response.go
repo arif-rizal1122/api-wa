@@ -3,14 +3,14 @@ package response
 
 type UpdateResponse struct {
 	// fields here
-	Status       int
-	Message      string
+	Status       int      `json:"status"`
+	Message      string	  `json:"message"`
 }
 
 
 func ApiUpdateResponse(status int, message string) *UpdateResponse {
 	return &UpdateResponse{
-		Status: status,
+		Status: status, 
 		Message: message,
 	}
 }

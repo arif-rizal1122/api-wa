@@ -10,8 +10,8 @@ type PayloadUpdateStatus struct {
 
 
 type StatusUpdateResponse struct {
-	Picture         string
-	Caption         string
+	Picture         string  `json:"picture"`
+	Caption         string	`json:"caption"`
 }
 
 

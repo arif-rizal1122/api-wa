@@ -3,8 +3,9 @@ package request
 
 
 type RequestCreateStatus struct {
-	Picture string `json:"picture"`
-	Caption string `json:"caption"`
+	Picture string `json:"picture" binding:"required"`
+	Caption string `json:"caption" binding:"required"`
+	UserId  int    `json:"user_id"`
 }
 
 
@@ -13,7 +14,6 @@ type RequestCreateStatus struct {
 type RequestUpdateStatus struct {
 	 Picture                   string	`json:"picture"`
 	 Caption                   string	`json:"caption"`
-	 StatusId                  int      `json:"user_id"`
 }
 
 

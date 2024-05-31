@@ -12,111 +12,149 @@ import (
 )
 
 type StatusController struct {
-	Usecase usecase.StatusUsecase
+	usecase usecase.StatusUsecase
 }
+
 func NewStatusController(Usecase usecase.StatusUsecase) *StatusController {
-	return &StatusController{Usecase: Usecase}
+	return &StatusController{usecase: Usecase}
 }
+
 
 
 func (c *StatusController) CreateStatus(ctx *gin.Context) {
 	var input request.RequestCreateStatus
-
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		response := helper.NewErrorsResponse("BAD_REQUEST", http.StatusUnprocessableEntity, err.Error())
 		ctx.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
-	response, err := c.Usecase.CreateStatus(ctx, input)
+	userId, _ := helper.AuthUserID(ctx)
+	data, err := c.usecase.CreateStatus(input, userId)
 	if err != nil {
-		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusBadRequest, err.Error())
-		ctx.JSON(http.StatusBadRequest, errRes)
+		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
+		ctx.JSON(http.StatusInternalServerError, response)
 		return
 	}
-	ctx.JSON(http.StatusCreated, gin.H{"message": response.Message, "data": response.Data})
+	ctx.JSON(http.StatusCreated, gin.H{"message": data.Message, "data": data.Data})
 }
-
-
-
-
+/*
+*fix
+*
+*/ 
 
 func (c *StatusController) FindById(ctx *gin.Context) {
+	userId, _ := helper.AuthUserID(ctx)
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		response := helper.NewErrorsResponse("status id no found", http.StatusNotFound, err.Error())
+		response := helper.NewErrorsResponse("ERROR", http.StatusUnprocessableEntity, "PARAMETER INVALID")
 		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
-
-	status, err := c.Usecase.FindById(ctx, id)
+	status, err := c.usecase.FindById(id)
 	if err != nil {
-		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusBadRequest, err.Error())
-		ctx.JSON(http.StatusBadRequest, errRes)
+		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
+		ctx.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	userdID := status.StatusResponseFind.UserId
+	if userdID != userId {
+		errRes := helper.NewErrorsResponse("ERROR", http.StatusUnauthorized, "ACCESS DENIED")
+		ctx.JSON(http.StatusUnauthorized, errRes)
 		return
 	}
 	ctx.JSON(http.StatusOK, status)
 }
-
-
-
-
+/*
+*fix
+*
+*/ 
 
 func (c *StatusController) FindAll(ctx *gin.Context) {
-	status, err := c.Usecase.FindAll(ctx)
+	userId, _ := helper.AuthUserID(ctx)
+
+	status, err := c.usecase.FindAll(userId)
 	if err != nil {
-		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusBadRequest, err.Error())
-		ctx.JSON(http.StatusBadRequest, errRes)
+		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
+		ctx.JSON(http.StatusInternalServerError, response)
 		return
 	}
-	ctx.JSON(http.StatusOK, status)
+	for _, item := range status.StatusResponseFinds {
+		if item.UserId == userId {
+			ctx.JSON(http.StatusOK, status)
+			return
+		}
+	}
+	errRes := helper.NewErrorsResponse("INTERNAL SERVER ERROR", http.StatusForbidden, "ACCESS DENIED")
+	ctx.JSON(http.StatusForbidden, errRes)
 }
-
-
+/*
+*fix
+*
+*/ 
 
 func (c *StatusController) Delete(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		response := helper.NewErrorsResponse("status id no found", http.StatusNotFound, err.Error())
+		response := helper.NewErrorsResponse("ERROR", http.StatusUnprocessableEntity, "PARAMETER INVALID")
 		ctx.JSON(http.StatusNotFound, response)
 		return
-	}		
-
-	errDelete := c.Usecase.Delete(ctx, id)
-	if errDelete != nil {
-		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusBadRequest, errDelete.Error())
-		ctx.JSON(http.StatusBadRequest, errRes)
+	}
+	statusId, errFind := c.usecase.FindById(id)
+	if errFind != nil {
+		response := helper.NewErrorsResponse("ERROR", http.StatusNotFound, "NOT_FOUND")
+		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
-    ctx.JSON(http.StatusOK, gin.H{"message": "delete statuse by id success"})
+	errDelete := c.usecase.Delete(id)
+	if errDelete != nil {
+		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
+		ctx.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	idStr, _ := helper.AuthUserID(ctx)
+	if statusId.StatusResponseFind.UserId != idStr {
+		errRes := helper.NewErrorsResponse("ERROR", http.StatusUnauthorized, "ACCESS DENIED")
+		ctx.JSON(http.StatusUnauthorized, errRes)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "status deleted successfully"})
 }
-
-
-
+/*
+*fix
+*
+*/ 
 
 func (c *StatusController) Update(ctx *gin.Context) {
 	var input request.RequestUpdateStatus
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		response := helper.NewErrorsResponse("Updated status failed", http.StatusUnprocessableEntity, err.Error())
+		response := helper.NewErrorsResponse("VALIDATION ERROR", http.StatusUnprocessableEntity, err.Error())
 		ctx.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
-	_, err := strconv.Atoi(ctx.Param("id"))
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		response := helper.NewErrorsResponse("user id no found", http.StatusNotFound, err.Error())
+		response := helper.NewErrorsResponse("ERROR", http.StatusUnprocessableEntity, "PARAMETER INVALID")
+		ctx.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	userId, errFind := c.usecase.FindById(id)
+	if errFind != nil {
+		response := helper.NewErrorsResponse("ERROR", http.StatusNotFound, "NOT_FOUND")
 		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
-
-	err = c.Usecase.Update(ctx, &input)
+	err = c.usecase.Update(id, input)
 	if err != nil {
-		response := helper.NewErrorsResponse("Internal server error", http.StatusBadRequest, err.Error())
-		ctx.JSON(http.StatusBadRequest, response)
+		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
+		ctx.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	idStr, _ := helper.AuthUserID(ctx)
+	if userId.StatusResponseFind.UserId != idStr {
+		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusUnauthorized, "ACCESS DENIED")
+		ctx.JSON(http.StatusUnauthorized, errRes)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Updated success success"})
 }
-
-
-
-

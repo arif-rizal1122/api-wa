@@ -5,26 +5,23 @@ import (
 	"api-wa/app/domain/entity"
 	"api-wa/app/domain/types/request"
 	"api-wa/app/domain/types/response"
-	"api-wa/app/helper"
 	"errors"
 	"net/http"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
-
-
-
 
 type UserUsecase struct {
 	Repository contract.UserRepository
 }
 
-
 func NewUserUsecaseImpl(repo contract.UserRepository) *UserUsecase {
 	return &UserUsecase{Repository: repo}
 }
+
+
+
 
 
 func (s *UserUsecase) RegisterUser(data request.RequestUserRegister) (*response.Payload, error) {
@@ -50,12 +47,14 @@ func (s *UserUsecase) RegisterUser(data request.RequestUserRegister) (*response.
 		Email:    createdUser.Email,
 		Phone:    createdUser.Phone,
 	})
-
 	return &response, nil
 }
 
 
-func (s *UserUsecase) UpdateUser(id int, data request.RequestUpdateUser)  error {
+
+
+
+func (s *UserUsecase) UpdateUser(id int, data request.RequestUpdateUser) error {
 	user, err := s.Repository.FindById(id)
 	if err != nil {
 		return err
@@ -70,13 +69,11 @@ func (s *UserUsecase) UpdateUser(id int, data request.RequestUpdateUser)  error 
 		}
 		user.Password = string(hashedPassword)
 	}
-
 	user.Name = data.Name
 	user.Username = data.Username
 	user.Email = data.Email
 	user.Phone = data.Phone
 	user.UpdatedAt = time.Now()
-
 	err = s.Repository.Update(user)
 	if err != nil {
 		return err
@@ -88,52 +85,50 @@ func (s *UserUsecase) UpdateUser(id int, data request.RequestUpdateUser)  error 
 
 
 func (s *UserUsecase) FindById(Id int) (*response.PayloadFind, error) {
-    user, err := s.Repository.FindById(Id)
-    if err != nil {
-        return nil, err
-    }
-    if user == nil {
-        return nil, errors.New("pengguna tidak ditemukan")
-    }
-
-    responseFind := response.ResponseFind{
-        Name:     user.Name,
-        Username: user.Username,
-        Email:    user.Email,
-        Phone:    user.Phone,
-    }
-
-    payload := &response.PayloadFind{
-        Message: "Data ditemukan dengan sukses",
-        Status:  http.StatusOK,
-        Data:    responseFind,
-    }
-
-    return payload, nil
+	user, err := s.Repository.FindById(Id)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("pengguna tidak ditemukan")
+	}
+	responseFind := response.ResponseFind{
+		Name:     user.Name,
+		Username: user.Username,
+		Email:    user.Email,
+		Phone:    user.Phone,
+	}
+	payload := &response.PayloadFind{
+		Message: "Data ditemukan dengan sukses",
+		Status:  http.StatusOK,
+		Data:    responseFind,
+	}
+	return payload, nil
 }
 
 
 
-func (s *UserUsecase) FindAll() (*[]response.PayloadFinds, error) {
-    users, err := s.Repository.FindAll()
-    if err != nil {
-        return nil, err
-    }
-    var userResponses []response.ResponseFinds
-    for _, user := range *users {
-        userResponses = append(userResponses, response.ResponseFinds{
-            Name:     user.Name,
-            Username: user.Username,
-            Email:    user.Email,
-            Phone:    user.Phone,
-        })
-    }
-    payload := &response.PayloadFinds{
-        Message: "Get all users success",
-        Status:  http.StatusOK,
-        Datas:   userResponses,
-    }
-    return &[]response.PayloadFinds{*payload}, nil
+
+func (s *UserUsecase) FindAll() (*response.PayloadFinds, error) {
+	users, err := s.Repository.FindAll()
+	if err != nil {
+		return nil, err
+	}
+	var userResponses []response.ResponseFinds
+	for _, user := range *users {
+		userResponses = append(userResponses, response.ResponseFinds{
+			Name:     user.Name,
+			Username: user.Username,
+			Email:    user.Email,
+			Phone:    user.Phone,
+		})
+	}
+	payload := &response.PayloadFinds{
+		Message: "Get all users success",
+		Status:  http.StatusOK,
+		Datas:   userResponses,
+	}
+	return payload, nil
 }
 
 
@@ -141,41 +136,23 @@ func (s *UserUsecase) FindAll() (*[]response.PayloadFinds, error) {
 
 func (s *UserUsecase) DeleteUser(Id int) error {
 	_, err := s.Repository.FindById(Id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("user not found")
-	} else if err != nil {
-		return err 
+ 	if err != nil {
+	   return err
 	}
-
 	err = s.Repository.DeleteUser(Id)
 	if err != nil {
 		return err
 	}
-
-	return nil 
+	return nil
 }
 
 
 
-func (s *UserUsecase) LoginUser(data request.AuthUserLoginRequest) (*response.ResponseUserLogin, error) {
-	user, err := s.Repository.UserLogin(data.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
-		return nil, errors.New("wrong credentials")
-	}
-
-	token, err := helper.GenerateToken(user)
-	if err != nil {
-		return nil, err
-	}
-
-	response := &response.ResponseUserLogin{
-		Email: user.Email,
-		Token: token,
-	}
-	return response, nil
+func (s *UserUsecase) FindByEmail(email string) (*entity.User, error) {
+    emailUser, err := s.Repository.FindByEmail(email)
+    if err != nil {
+        return nil, err
+    }
+    return emailUser, nil
 }
 

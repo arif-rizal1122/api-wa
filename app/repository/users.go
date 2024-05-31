@@ -9,147 +9,129 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepositoryctx struct {
+type UserRepository struct {
 	DB *gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) contract.UserRepository {
-	return &UserRepositoryctx{DB: db}
+	return &UserRepository{DB: db}
 }
 
-func (u *UserRepositoryctx) Create(data *entity.User) (*entity.User, error) {
+func (u *UserRepository) Create(data *entity.User) (*entity.User, error) {
 	tx := u.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	err := tx.Table("users").Create(&data).Error
-	if err != nil {
-		tx.Rollback() 
+	if err := tx.Table("users").Create(&data).Error; err != nil {
+		tx.Rollback()
 		return nil, err
 	}
-	tx.Commit() 
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	return data, nil
 }
 
-func (u *UserRepositoryctx) Update(data *entity.User) error {
+func (u *UserRepository) Update(data *entity.User) error {
 	tx := u.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	err := tx.Table("users").Save(&data).Error
-	if err != nil {
+	if err := tx.Table("users").Save(&data).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
- 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
 	return nil
 }
 
 
-func (u *UserRepositoryctx) DeleteUser(Id int) error {
-	tx := u.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
 
+func (u *UserRepository) DeleteUser(Id int) error {
+	tx := u.DB.Begin()
 	user, err := u.FindById(Id)
 	if err != nil {
-		tx.Rollback() 
+		tx.Rollback()
 		return err
 	}
-
-	result := tx.Delete(&user)
-	if result.Error != nil {
-		tx.Rollback() 
-		return result.Error
+	if err := tx.Delete(&user).Error; err != nil {
+		tx.Rollback()
+		return err
 	}
-
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
 	return nil
 }
 
-
-
-
-
-func (u *UserRepositoryctx) FindAll() (*[]entity.User, error) {
+func (u *UserRepository) FindAll() (*[]entity.User, error) {
 	var users []entity.User
-
 	tx := u.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	result := tx.Find(&users)
-	if result.Error != nil {
+	if err := tx.Find(&users).Error; err != nil {
 		tx.Rollback()
-		return nil, result.Error
+		return nil, err
 	}
-
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	return &users, nil
 }
 
-
-
-
-func (u *UserRepositoryctx) FindById(Id int) (*entity.User, error) {
+func (u *UserRepository) FindById(Id int) (*entity.User, error) {
 	var user entity.User
-
 	tx := u.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	result := tx.First(&user, "id = ?", Id) 
-
+	result := tx.First(&user, "id = ?", Id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			tx.Rollback()
-			return &entity.User{}, errors.New("user not found")
+			return nil, errors.New("user not found")
 		}
 		tx.Rollback()
-		return &entity.User{}, fmt.Errorf("error finding user by ID: %w", result.Error)
+		return nil, fmt.Errorf("error finding user by ID: %w", result.Error)
 	}
-
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	return &user, nil
 }
 
-
-
-func (u *UserRepositoryctx) UserLogin(email string) (*entity.User, error) {
+func (u *UserRepository) UserLogin(email string) (*entity.User, error) {
 	var user entity.User
 	tx := u.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
 	result := tx.First(&user, "Email = ?", email)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			tx.Rollback()
 			return nil, errors.New("credentials errors")
 		}
-		    tx.Rollback()
+		tx.Rollback()
 		return nil, fmt.Errorf("error finding user by email: %w", result.Error)
 	}
-
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	return &user, nil
+}
+
+
+
+func (u *UserRepository) FindByEmail(email string) (*entity.User, error) {
+	var emailUser entity.User
+    tx    :=  u.DB.Begin()
+	result  :=  tx.First(&emailUser, "email = ?", email)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			tx.Rollback()
+			return nil, errors.New("credentials errors")
+		}
+		tx.Rollback()
+		return nil, fmt.Errorf("error finding user by email: %w", result.Error)
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	return &emailUser, nil
 }

@@ -13,10 +13,10 @@ import (
 
 
 type StatusRepository interface {
-	CreateStatus(data *entity.Status)       (*entity.Status, error)
+	CreateStatus(data *entity.Status, userId int) (*entity.Status, error)
 	Update(data *entity.Status)      		 error
 	FindById(statusId int)          	    (*entity.Status, error)
-	FindAll()                        	    (*[]entity.Status, error)
+	FindAll(userId int)                        	    (*[]entity.Status, error)
 	Delete(statusId int)         			 error
 }
 
