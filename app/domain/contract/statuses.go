@@ -11,7 +11,6 @@ import (
 
 
 
-
 type StatusRepository interface {
 	CreateStatus(data *entity.Status, userId int) (*entity.Status, error)
 	Update(data *entity.Status)      		 error

@@ -1,6 +1,6 @@
 module api-wa
 
-go 1.22.1
+go 1.23
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

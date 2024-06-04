@@ -42,8 +42,14 @@ func (c *StatusController) CreateStatus(ctx *gin.Context) {
 *
 */ 
 
+
 func (c *StatusController) FindById(ctx *gin.Context) {
-	userId, _ := helper.AuthUserID(ctx)
+	userId, errAuth := helper.AuthUserID(ctx)
+	if errAuth != nil {
+		response := helper.NewErrorsResponse("ERROR", http.StatusUnauthorized, "PARAMETER INVALID")
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		response := helper.NewErrorsResponse("ERROR", http.StatusUnprocessableEntity, "PARAMETER INVALID")
@@ -52,8 +58,8 @@ func (c *StatusController) FindById(ctx *gin.Context) {
 	}
 	status, err := c.usecase.FindById(id)
 	if err != nil {
-		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
-		ctx.JSON(http.StatusInternalServerError, response)
+		response := helper.NewErrorsResponse("ERROR", http.StatusNotFound, "NOT FOUND")
+		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
 	userdID := status.StatusResponseFind.UserId
@@ -64,6 +70,8 @@ func (c *StatusController) FindById(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, status)
 }
+
+
 /*
 *fix
 *
@@ -71,7 +79,6 @@ func (c *StatusController) FindById(ctx *gin.Context) {
 
 func (c *StatusController) FindAll(ctx *gin.Context) {
 	userId, _ := helper.AuthUserID(ctx)
-
 	status, err := c.usecase.FindAll(userId)
 	if err != nil {
 		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
@@ -105,20 +112,26 @@ func (c *StatusController) Delete(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
+	idStr, errAuth := helper.AuthUserID(ctx)
+	if errAuth != nil {
+		response := helper.NewErrorsResponse("ERROR", http.StatusUnauthorized, "PARAMETER INVALID")
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
+	if statusId.StatusResponseFind.UserId != idStr {
+		errRes := helper.NewErrorsResponse("ERROR", http.StatusUnauthorized, "ACCESS DENIED")
+		ctx.JSON(http.StatusUnauthorized, errRes)
+		return
+	}
 	errDelete := c.usecase.Delete(id)
 	if errDelete != nil {
 		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
 		ctx.JSON(http.StatusInternalServerError, response)
 		return
 	}
-	idStr, _ := helper.AuthUserID(ctx)
-	if statusId.StatusResponseFind.UserId != idStr {
-		errRes := helper.NewErrorsResponse("ERROR", http.StatusUnauthorized, "ACCESS DENIED")
-		ctx.JSON(http.StatusUnauthorized, errRes)
-		return
-	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "status deleted successfully"})
 }
+
 /*
 *fix
 *
@@ -144,16 +157,16 @@ func (c *StatusController) Update(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
-	err = c.usecase.Update(id, input)
-	if err != nil {
-		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
-		ctx.JSON(http.StatusInternalServerError, response)
-		return
-	}
 	idStr, _ := helper.AuthUserID(ctx)
 	if userId.StatusResponseFind.UserId != idStr {
 		errRes := helper.NewErrorsResponse("BAD_REQUEST", http.StatusUnauthorized, "ACCESS DENIED")
 		ctx.JSON(http.StatusUnauthorized, errRes)
+		return
+	}
+	err = c.usecase.Update(id, input)
+	if err != nil {
+		response := helper.NewErrorsResponse("ERROR", http.StatusInternalServerError, "INVALID SERVER ERROR")
+		ctx.JSON(http.StatusInternalServerError, response)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Updated success success"})
