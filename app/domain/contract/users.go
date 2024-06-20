@@ -15,20 +15,20 @@ type UserRepository interface {
 	FindById(Id int)                  (*entity.User, error)
 	FindAll()                         (*[]entity.User, error)
 	DeleteUser(Id int)                error
-	FindByEmail(email string)         (*entity.User, error)
+	FindByUsername(username string)         (*entity.User, error)
 	UserLogin(email string)	          (*entity.User, error)
 }
 
 
 type UserService interface {
 	RegisterUser(data request.RequestUserRegister)   (*response.ResponseUserRegister, error)
-	UpdateUser(Id int, data entity.User)           (string, error)
+	UpdateUser(data entity.User)           (string, error)
 	FindById(Id int)                               (*response.ResponseFind, error)
 	FindAll()                                      (*[]response.ResponseFinds, error)
     DeleteUser(Id int)							   (string, error)
 	
 	LoginUser(data request.AuthUserLoginRequest) (*entity.User, error)
-	FindByEmail(email string)                  (*entity.User, error)
+	FindByUsername(username string)                  (*entity.User, error)
 }
 
 

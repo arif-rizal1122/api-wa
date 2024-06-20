@@ -117,21 +117,21 @@ func (u *UserRepository) UserLogin(email string) (*entity.User, error) {
 
 
 
-func (u *UserRepository) FindByEmail(email string) (*entity.User, error) {
-	var emailUser entity.User
+func (u *UserRepository) FindByUsername(username string) (*entity.User, error) {
+	var usernameUser entity.User
     tx    :=  u.DB.Begin()
-	result  :=  tx.First(&emailUser, "email = ?", email)
+	result  :=  tx.First(&usernameUser, "username = ?", username)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			tx.Rollback()
 			return nil, errors.New("credentials errors")
 		}
 		tx.Rollback()
-		return nil, fmt.Errorf("error finding user by email: %w", result.Error)
+		return nil, fmt.Errorf("error finding user by username: %w", result.Error)
 	}
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return nil, err
 	}
-	return &emailUser, nil
+	return &usernameUser, nil
 }

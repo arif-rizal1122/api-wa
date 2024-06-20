@@ -22,7 +22,7 @@ func GenerateToken(user *entity.User) (string, error) {
 	claims := JWTClaims{
 		ID: user.ID,
 		Role: user.Email,
-		UserCurrent: user.Email,
+		UserCurrent: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(60 * time.Minute)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

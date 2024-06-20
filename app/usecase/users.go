@@ -70,7 +70,6 @@ func (s *UserUsecase) UpdateUser(id int, data request.RequestUpdateUser) error {
 		user.Password = string(hashedPassword)
 	}
 	user.Name = data.Name
-	user.Username = data.Username
 	user.Email = data.Email
 	user.Phone = data.Phone
 	user.UpdatedAt = time.Now()
@@ -148,8 +147,8 @@ func (s *UserUsecase) DeleteUser(Id int) error {
 
 
 
-func (s *UserUsecase) FindByEmail(email string) (*entity.User, error) {
-    emailUser, err := s.Repository.FindByEmail(email)
+func (s *UserUsecase) FindByUsername(username string) (*entity.User, error) {
+    emailUser, err := s.Repository.FindByUsername(username)
     if err != nil {
         return nil, err
     }

@@ -1,19 +1,15 @@
 package request
 
 
-
 type RequestCreateStatus struct {
-	Picture string `json:"picture" binding:"required"`
-	Caption string `json:"caption" binding:"required"`
-	UserId  int    `json:"user_id"`
+    Caption string `form:"caption" binding:"required"`
+    Picture string // No need to bind or validate this field directly in the struct
 }
-
 
 
 
 type RequestUpdateStatus struct {
-	 Picture                   string	`json:"picture"`
-	 Caption                   string	`json:"caption"`
+    Caption string `form:"caption" binding:"required"`
+    Picture string // No need to bind or validate this field directly in the struct
 }
-
 
