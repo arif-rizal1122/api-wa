@@ -9,7 +9,7 @@ import (
 	"api-wa/database"
 	"api-wa/routes"
 	"log"
-
+ _ "github.com/go-sql-driver/mysql"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
